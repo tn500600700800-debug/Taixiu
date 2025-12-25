@@ -1,15 +1,322 @@
-<!DOCTYPE html> <html lang="vi"> <head> <meta charset="UTF-8"> <title>Tài Xỉu – Demo giáo dục</title> <style> /* ===== NỀN ===== */ body{ margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background: radial-gradient(circle at top,#1a2a3a,#05080d); font-family: 'Segoe UI', sans-serif; color:white; overflow:hidden; } /* ===== GAME ===== */ .game{ display:flex; align-items:center; gap:40px; } /* ===== TÀI / XỈU ===== */ .bet-box{ width:170px; height:170px; border-radius:26px; display:flex; justify-content:center; align-items:center; font-size:52px; font-weight:900; cursor:pointer; user-select:none; transition:0.25s; text-shadow:0 0 25px currentColor; opacity:.6; } .bet-box.active{ opacity:1; transform:scale(1.05); } .tai{ color:#00ffcc; background:linear-gradient(145deg,#0a3f3a,#021918); box-shadow:inset 0 0 12px rgba(255,255,255,.2),0 0 30px #00ffcc; } .xiu{ color:#ff4b4b; background:linear-gradient(145deg,#4a1111,#1a0404); box-shadow:inset 0 0 12px rgba(255,255,255,.2),0 0 30px #ff4b4b; } /* ===== ĐĨA ===== */ .plate{ width:320px; height:320px; border-radius:50%; background:radial-gradient(circle at 30% 30%,#333,#111 60%,#000); box-shadow: inset 0 25px 45px rgba(0,0,0,.9), inset 0 -10px 20px rgba(255,255,255,.05), 0 0 45px rgba(0,255,255,.35); display:flex; justify-content:center; align-items:center; position:relative; } .plate::before{ content:""; position:absolute; inset:-12px; border-radius:50%; background:linear-gradient(145deg,#bbb,#333); z-index:-1; } /* ===== XÚC XẮC ===== */ .dice-area{display:flex;gap:22px;} .scene{width:72px;height:72px;perspective:500px;} .cube{ width:100%;height:100%; position:relative; transform-style:preserve-3d; transition:transform 1s ease; } .face{ position:absolute; width:72px;height:72px; background:white; border-radius:10px; border:2px solid #000; display:flex; justify-content:center; align-items:center; font-size:26px; font-weight:bold; color:black; } .front{transform:translateZ(36px)} .back{transform:rotateY(180deg) translateZ(36px)} .right{transform:rotateY(90deg) translateZ(36px)} .left{transform:rotateY(-90deg) translateZ(36px)} .top{transform:rotateX(90deg) translateZ(36px)} .bottom{transform:rotateX(-90deg) translateZ(36px)} /* ===== THÔNG TIN ===== */ .info{ position:absolute; top:-70px; text-align:center; font-size:14px; } .roll-btn{ position:absolute; bottom:-65px; padding:12px 30px; border-radius:30px; border:none; font-size:16px; font-weight:bold; cursor:pointer; background:linear-gradient(145deg,#00ffd5,#00bfa6); } /* ===== MODAL TUYÊN TRUYỀN ===== */ .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; justify-content:center; align-items:center; z-index:999; } .overlay.active{display:flex;} .modal{ width:520px; background:linear-gradient(145deg,#1b1b1b,#0c0c0c); border-radius:20px; padding:30px; box-shadow:0 0 40px red; text-align:center; } .modal h2{ color:#ff4b4b; margin-bottom:15px; } .modal p{ font-size:15px; line-height:1.6; } .modal .note{ margin-top:15px; font-size:13px; color:#ffcc00; } .modal button{ margin-top:20px; padding:10px 26px; border:none; border-radius:25px; font-weight:bold; cursor:pointer; } </style> </head> <body> <div class="game"> <div class="bet-box tai active" onclick="choose('tai')" id="taiBox">TÀI</div> <div class="plate"> <div class="info">
-        💰Tiền mô phỏng: <b id="money">1000</b><br>
-        🎯Ván: <b id="round">0</b> </div> <div class="dice-area"> <div class="scene"><div class="cube" id="d1"></div></div> <div class="scene"><div class="cube" id="d2"></div></div> <div class="scene"><div class="cube" id="d3"></div></div> </div> <button class="roll-btn" onclick="play()">ĐỔ XÚC XẮC</button> </div> <div class="bet-box xiu" onclick="choose('xiu')" id="xiuBox">XỈU</div> </div> <!-- ===== THÔNG HỒI TUYÊN TRUYỀN ===== --> <div class="overlay" id="overlay"> <div class="modal"> <h2>⚠CẢNH BÁO CỜ BẠC ONLINE</h2>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tài Xỉu – Demo giáo dục</title>
+
+    <style>
+        /* ===== NỀN ===== */
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at top, #1a2a3a, #05080d);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* ===== GAME ===== */
+        .game {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        /* ===== TÀI / XỈU ===== */
+        .bet-box {
+            width: 170px;
+            height: 170px;
+            border-radius: 26px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 52px;
+            font-weight: 900;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.25s;
+            text-shadow: 0 0 25px currentColor;
+            opacity: .6;
+        }
+
+        .bet-box.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .tai {
+            color: #00ffcc;
+            background: linear-gradient(145deg, #0a3f3a, #021918);
+            box-shadow: inset 0 0 12px rgba(255,255,255,.2),
+                        0 0 30px #00ffcc;
+        }
+
+        .xiu {
+            color: #ff4b4b;
+            background: linear-gradient(145deg, #4a1111, #1a0404);
+            box-shadow: inset 0 0 12px rgba(255,255,255,.2),
+                        0 0 30px #ff4b4b;
+        }
+
+        /* ===== ĐĨA ===== */
+        .plate {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #333, #111 60%, #000);
+            box-shadow:
+                inset 0 25px 45px rgba(0,0,0,.9),
+                inset 0 -10px 20px rgba(255,255,255,.05),
+                0 0 45px rgba(0,255,255,.35);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .plate::before {
+            content: "";
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #bbb, #333);
+            z-index: -1;
+        }
+
+        /* ===== XÚC XẮC ===== */
+        .dice-area {
+            display: flex;
+            gap: 22px;
+        }
+
+        .scene {
+            width: 72px;
+            height: 72px;
+            perspective: 500px;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease;
+        }
+
+        .face {
+            position: absolute;
+            width: 72px;
+            height: 72px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .front  { transform: translateZ(36px); }
+        .back   { transform: rotateY(180deg) translateZ(36px); }
+        .right  { transform: rotateY(90deg) translateZ(36px); }
+        .left   { transform: rotateY(-90deg) translateZ(36px); }
+        .top    { transform: rotateX(90deg) translateZ(36px); }
+        .bottom { transform: rotateX(-90deg) translateZ(36px); }
+
+        /* ===== THÔNG TIN ===== */
+        .info {
+            position: absolute;
+            top: -70px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .roll-btn {
+            position: absolute;
+            bottom: -65px;
+            padding: 12px 30px;
+            border-radius: 30px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(145deg, #00ffd5, #00bfa6);
+        }
+
+        /* ===== MODAL TUYÊN TRUYỀN ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 520px;
+            background: linear-gradient(145deg, #1b1b1b, #0c0c0c);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 40px red;
+            text-align: center;
+        }
+
+        .modal h2 {
+            color: #ff4b4b;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .modal .note {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #ffcc00;
+        }
+
+        .modal button {
+            margin-top: 20px;
+            padding: 10px 26px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="game">
+    <div class="bet-box tai active" onclick="choose('tai')" id="taiBox">TÀI</div>
+
+    <div class="plate">
+        <div class="info">
+            💰Tiền mô phỏng: <b id="money">1000</b><br>
+            🎯Ván: <b id="round">0</b>
+        </div>
+
+        <div class="dice-area">
+            <div class="scene"><div class="cube" id="d1"></div></div>
+            <div class="scene"><div class="cube" id="d2"></div></div>
+            <div class="scene"><div class="cube" id="d3"></div></div>
+        </div>
+
+        <button class="roll-btn" onclick="play()">ĐỔ XÚC XẮC</button>
+    </div>
+
+    <div class="bet-box xiu" onclick="choose('xiu')" id="xiuBox">XỈU</div>
+</div>
+
+<!-- ===== THÔNG BÁO TUYÊN TRUYỀN ===== -->
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <h2>⚠ CẢNH BÁO CỜ BẠC ONLINE</h2>
+
         <p>
             Cờ bạc online không phải là trò giải trí vô hại.<br><br>
-            🎯Ban đầu có thể thắng để tạo niềm tin<br>
-            📉Nhưng càng chơi lâu, xác suất càng bất lợi<br>
-            💸Hệ quả là mất tiền, áp lực tâm lý, nợ nần<br><br>
+            🎯 Ban đầu có thể thắng để tạo niềm tin<br>
+            📉 Nhưng càng chơi lâu, xác suất càng bất lợi<br>
+            💸 Hệ quả là mất tiền, áp lực tâm lý, nợ nần<br><br>
             <b>Không có “chiến thuật chắc thắng” trong cờ bạc.</b>
         </p>
+
         <div class="note">
             Đây là mô phỏng phục vụ GIÁO DỤC<br>
             Hãy nói KHÔNG với cờ bạc online
         </div>
-        <button onclick="location.reload()">🔁Xem lại mô phỏng</button></div></div><script> console.warn("CHẾ ĐỘ DEMO – Chỉ dành cho mục đích mô phỏng giáo dục"); let money=1000, round=0, choice="tai"; const BET=100; const rotations={ 1:"rotateX(0deg) rotateY(0deg)", 2:"rotateX(-90deg)", 3:"rotateY(90deg)", 4:"rotateY(-90deg)", 5:"rotateX(90deg)", 6:"rotateY(180deg)" }; ["d1","d2","d3"].forEach(id=>{ document.getElementById(id).innerHTML=` <div class="face front">1</div> <div class="face back">6</div> <div class="face right">3</div> <div class="face left">4</div> <div class="face top">5</div> <div class="face bottom">2</div> `; }); function choose(c){ choice=c; taiBox.classList.remove("active"); xiuBox.classList.remove("active"); document.getElementById(c+"Box").classList.add("active"); } function rollOne(id,val){ const el=document.getElementById(id); el.style.transform=`rotateX(${Math.random()*720}deg) rotateY(${Math.random()*720}deg)`; setTimeout(()=>el.style.transform=rotations[val],600); } function play(){ if(money<=0) return; round++; document.getElementById("round").innerText=round; let d1=r(),d2=r(),d3=r(), total=d1+d2+d3; rollOne("d1",d1); rollOne("d2",d2); rollOne("d3",d3); let winRate = round<=3?0.8:round<=6?0.5:0.1; let win=Math.random()<winRate && ((choice==="tai"&&total>=11)||(choice==="xiu"&&total<=10)); money += win ? BET : -BET; document.getElementById("money").innerText=money; if(money<=0){ setTimeout(()=>document.getElementById("overlay").classList.add("active"),1200); } } function r(){return Math.floor(Math.random()*6)+1;} </script> </body> </html>
+
+        <button onclick="location.reload()">🔁 Xem lại mô phỏng</button>
+    </div>
+</div>
+
+<script>
+    console.warn("CHẾ ĐỘ DEMO – Chỉ dành cho mục đích mô phỏng giáo dục");
+
+    let money = 1000,
+        round = 0,
+        choice = "tai";
+
+    const BET = 100;
+
+    const rotations = {
+        1: "rotateX(0deg) rotateY(0deg)",
+        2: "rotateX(-90deg)",
+        3: "rotateY(90deg)",
+        4: "rotateY(-90deg)",
+        5: "rotateX(90deg)",
+        6: "rotateY(180deg)"
+    };
+
+    ["d1", "d2", "d3"].forEach(id => {
+        document.getElementById(id).innerHTML = `
+            <div class="face front">1</div>
+            <div class="face back">6</div>
+            <div class="face right">3</div>
+            <div class="face left">4</div>
+            <div class="face top">5</div>
+            <div class="face bottom">2</div>
+        `;
+    });
+
+    function choose(c) {
+        choice = c;
+        taiBox.classList.remove("active");
+        xiuBox.classList.remove("active");
+        document.getElementById(c + "Box").classList.add("active");
+    }
+
+    function rollOne(id, val) {
+        const el = document.getElementById(id);
+        el.style.transform = `rotateX(${Math.random() * 720}deg) rotateY(${Math.random() * 720}deg)`;
+        setTimeout(() => el.style.transform = rotations[val], 600);
+    }
+
+    function play() {
+        if (money <= 0) return;
+
+        round++;
+        document.getElementById("round").innerText = round;
+
+        let d1 = r(), d2 = r(), d3 = r();
+        let total = d1 + d2 + d3;
+
+        rollOne("d1", d1);
+        rollOne("d2", d2);
+        rollOne("d3", d3);
+
+        let winRate = round <= 3 ? 0.8 : round <= 6 ? 0.5 : 0.1;
+        let win = Math.random() < winRate &&
+            ((choice === "tai" && total >= 11) || (choice === "xiu" && total <= 10));
+
+        money += win ? BET : -BET;
+        document.getElementById("money").innerText = money;
+
+        if (money <= 0) {
+            setTimeout(() => {
+                document.getElementById("overlay").classList.add("active");
+            }, 1200);
+        }
+    }
+
+    function r() {
+        return Math.floor(Math.random() * 6) + 1;
+    }
+</script>
+
+</body>
+</html>
